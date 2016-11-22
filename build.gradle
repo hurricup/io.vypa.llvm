@@ -45,6 +45,7 @@ test {
 apply plugin: 'org.jetbrains.intellij'
 intellij {
     version ideaVersion
+    updateSinceUntilBuild = false
     downloadSources Boolean.valueOf(downloadIdeaSource)
     sandboxDirectory project.rootDir.canonicalPath + "/.sandbox"
 }
