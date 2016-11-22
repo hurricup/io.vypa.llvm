@@ -1,61 +1,64 @@
 buildscript {
     repositories {
-        mavenCentral()
+        maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
     }
 }
+
 plugins {
-    id "org.jetbrains.intellij" version "0.0.20"
+    id "org.jetbrains.intellij" version "0.1.10"
 }
 
-apply plugin: 'org.jetbrains.intellij'
+
+repositories {
+    mavenCentral()
+}
+
+
+version = "$version$buildNumber"
+
 apply plugin: 'java'
-apply plugin: 'idea'
-idea {
-    project {
-        jdkName = javaVersion
-        languageLevel = javaVersion
+
+sourceCompatibility = javaVersion
+targetCompatibility = javaTargetVersion
+tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+sourceSets {
+    main {
+        java.srcDirs 'src/main/java', 'gen'
+        resources.srcDir 'src/main/resources'
     }
-    module {
-        generatedSourceDirs += file('src/gen/java')
-    }
-}
-
-intellij {
-    version 'LATEST-EAP-SNAPSHOT' //IntelliJ IDEA dependency
-    pluginName 'llvm'
-}
-
-group 'io.vypa'
-version '0.0.1-alpha'
-
-
-allprojects {
-    apply plugin: 'java'
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaTargetVersion
-    tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
-    sourceSets {
-        main {
-            java.srcDirs 'src/main/java', 'gen'
-            resources.srcDir 'src/main/resources'
-        }
-        test {
-            java.srcDir 'src/test/java'
-            resources.srcDir 'src/test/resources'
-        }
+    test {
+        java.srcDir 'src/test/java'
+        resources.srcDir 'src/test/resources'
     }
 }
 
 test {
+    doFirst {
+        systemProperty("idea.plugins.path", project.rootDir.canonicalPath + "/.test-plugins")
+    }
     useJUnit {}
     testLogging {
         exceptionFormat = 'full'
     }
 }
 
-repositories {
-    mavenCentral()
-    mavenLocal()
+apply plugin: 'org.jetbrains.intellij'
+intellij {
+    version ideaVersion
+    downloadSources Boolean.valueOf(downloadIdeaSource)
+    sandboxDirectory project.rootDir.canonicalPath + "/.sandbox"
+}
+
+apply plugin: 'idea'
+
+idea {
+    project {
+        jdkName = javaVersion
+        languageLevel = javaVersion
+    }
+    module {
+        generatedSourceDirs += file('gen')
+    }
 }
 
 dependencies {
